@@ -24,8 +24,6 @@ conda update --yes conda
 conda install --yes python=3.5 numpy=1.13.1 scipy=0.19.1 \
     astropy=1.3.3 pyyaml ipython matplotlib
 
-source activate desi
-
 #- Add DESI-specific code
 pip install speclite==0.7
 pip install git+https://github.com/desihub/desiutil.git@1.9.9#egg=desiutil
