@@ -15,8 +15,13 @@ blah blah
 To create an environment to run these scripts at NERSC:
 ```
 #- Create basic python environment
-module load python/3.6-anaconda-4.4
-conda create --name desi --yes python=3.5 numpy=1.13.1 scipy=0.19.1 \
+curl -o miniconda3.sh \
+    https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash miniconda3.sh -b -f -p env
+rm -rf miniconda3.sh
+source env/bin/activate
+conda update --yes conda
+conda install --yes python=3.5 numpy=1.13.1 scipy=0.19.1 \
     astropy=1.3.3 pyyaml ipython matplotlib
 
 source activate desi
@@ -31,12 +36,10 @@ pip install git+https://github.com/desihub/desimodel.git@0.9.1#egg=desimodel
 #- Build mpi4py using Cray compiler wrappers
 wget https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-2.0.0.tar.gz
 tar zxvf mpi4py-2.0.0.tar.gz
-cd mpi4py-2.0.0
-module swap PrgEnv-intel PrgEnv-gnu
-python setup.py build --mpicc=$(which cc)
-python setup.py build_exe --mpicc="$(which cc) -dynamic"
-python setup.py install
-python setup.py install_exe
+(cd mpi4py-2.0.0                                &&  \
+    python setup.py build --mpicc=$(which cc)   &&  \
+    python setup.py install)                    &&  \
+rm -rf mpi4py-2.0.0 mpi4py-2.0.0.tar.gz
 
 #- This is a hack to get $DESIMODEL data somewhere; can we do better?
 export DESIMODEL=$CONDA_PREFIX/desimodel
@@ -49,7 +52,6 @@ echo "unset DESIMODEL" > $CONDA_PREFIX/etc/conda/deactivate.d/env_vars.sh
 ```
 
 To do:
-  * start with miniconda instead of pre-installed NERSC anaconda
   * docker-ize
 
 ## Running the benchmark
