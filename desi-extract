@@ -1,0 +1,113 @@
+#!/usr/bin/env python
+
+"""
+DESI spectral extraction code benchmark
+
+salloc -N 5 -t 2:00:00 -C haswell -q interactive
+srun -n 160 -c 2 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+"""
+
+#- Get timer going ASAP
+import time
+start_time = time.time()
+str_start_time = time.asctime()
+
+#- Then parse args before initializing MPI so that --help will work anywhere
+import argparse
+parser = argparse.ArgumentParser(usage = "{prog} [options]")
+parser.add_argument("-i", "--indir", type=str, required=True, help="input data directory")
+parser.add_argument("-o", "--outdir", type=str, required=True, help="output directory")
+# parser.add_argument("-n", "--nframes", type=int, help="number of input frames to extract")
+# parser.add_argument("-v", "--verbose", action="store_true", help="some flag")
+args = parser.parse_args()
+
+from mpi4py import MPI
+from desispec.scripts import extract
+import sys, os, glob, socket
+
+comm = MPI.COMM_WORLD
+rank = comm.rank
+size = comm.size
+
+comm.barrier()
+if rank == 0:
+    startup_time = time.time() - start_time
+    print('Started at {}'.format(str_start_time))
+    print('python startup time: {:.1f} sec'.format(startup_time))
+
+bundles_per_frame = 20
+assert size % bundles_per_frame == 0, 'MPI size {} should be multiple of {}'.format(size, bundles_per_frame)
+nframe = size // bundles_per_frame
+
+if rank == 0:
+    assert os.path.exists(args.outdir)
+    pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix*.fits'))
+    assert len(pixfiles) > 0
+    assert nframe <= len(pixfiles)
+    pixfiles = pixfiles[0:nframe]
+else:
+    pixfiles = None
+
+pixfiles = comm.bcast(pixfiles, root=0)
+assert nframe == len(pixfiles)
+
+if rank == 0:
+    print('{} input frames'.format(nframe))
+    print('Splitting {} ranks into {} communicators'.format(size, nframe))
+    sys.stdout.flush()
+
+comm.barrier()
+
+group = rank // bundles_per_frame
+group_rank =  rank % bundles_per_frame
+
+comm_group = comm.Split(color=group, key=group_rank)
+assert comm_group.rank == group_rank
+
+cmd_template = "desi_extract_spectra --mpi" \
+        " -i {indir}/pix/{night}/{pixfile}" \
+        " -f {indir}/pix/{night}/{fibermapfile}" \
+        " -p {indir}/psf/{night}/{psffile}" \
+        " -o {outdir}/{framefile}"
+        
+filename = pixfiles[group]
+pixdir, pixfile = os.path.split(filename)
+night = os.path.basename(pixdir)
+prefix, camera, expid = os.path.splitext(pixfile)[0].split('-')
+fibermapfile = 'fibermap-{}.fits'.format(expid)
+psffile = 'psfnight-{}.fits'.format(camera)
+framefile = 'frame-{}-{}.fits'.format(camera, expid)
+
+cmd = cmd_template.format(indir=args.indir, night=night, outdir=args.outdir,
+    pixfile=pixfile, fibermapfile=fibermapfile, psffile=psffile,
+    framefile=framefile)
+
+#- DEBUG speedup
+# if camera.startswith('b'):
+#     cmd = cmd + ' -w 4000,4200,1'
+# elif camera.startswith('r'):
+#     cmd = cmd + ' -w 6000,6200,1'
+# elif camera.startswith('z'):
+#     cmd = cmd + ' -w 9000,9200,1'
+
+if comm_group.rank == 0:
+    print(rank, cmd)
+    sys.stdout.flush()
+
+args = extract.parse(cmd.split()[1:])
+extract.main_mpi(args, comm=comm_group)
+
+comm.barrier()
+end_time = time.time()
+
+hostnames = comm.gather(socket.gethostname(), root=0)
+if rank == 0:
+    num_nodes = len(set(hostnames))
+    node_hours = num_nodes * (end_time - start_time) / (60*60)
+    work_rate = nframe / node_hours
+
+    print('{} frames in {:.1f} min'.format(nframe, (end_time - start_time)/60))
+    print('Work rate = {:.2f} frames per node-hour'.format(work_rate))
+
+
+

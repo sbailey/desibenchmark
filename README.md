@@ -52,7 +52,7 @@ echo "unset DESIMODEL" > $CONDA_PREFIX/etc/conda/deactivate.d/env_vars.sh
 To do:
   * docker-ize
 
-## Running the benchmark
+### Test installation
 
 Initial command to test if the environment worked:
 ```
@@ -68,7 +68,21 @@ time srun -n 20 --cpu_bind=cores \
 ```
 Should take 5-6 minutes and create $SCRATCH/frame-r1-00003580.fits.
 
-This will get replaced with a wrapper calling the underlying core
-on N>>1 input files.
+## Running the benchmark
 
+Haswell on 5 nodes (32x2 cores) <BR/>
+~12.5 frames per node-hour
+```
+salloc -N 5 -t 2:00:00 -C haswell -q interactive
+let n=32*$SLURM_JOB_NUM_NODES
+srun -n $n -c 2 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+```
+
+KNL on 5 nodes (68x4 cores) <BR/>
+~x.y frames per node-hour
+```
+salloc -N 5 -t 2:00:00 -C knl -q interactive
+let n=68*$SLURM_JOB_NUM_NODES
+srun -n $n -c 4 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+```
 
