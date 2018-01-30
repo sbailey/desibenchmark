@@ -22,7 +22,8 @@ def render_script(args):
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--architecture", "-a",
             choices = ["ivybridge", "haswell", "knl"],
             default = "haswell",
