@@ -86,3 +86,9 @@ let n=68*$SLURM_JOB_NUM_NODES
 srun -n $n -c 4 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
 ```
 
+Optional, to reduce the logging verbosity for large scale runs, change
+the logging level before running `desi-extract`:
+```
+export DESI_LOGLEVEL=error
+```
+
