@@ -7,6 +7,9 @@
 #SBATCH --image={{ shifter_image }}
 {% endif -%}
 #SBATCH --job-name={{ job_name }}
+{% if license -%}
+#SBATCH --license={{ license }}
+{% endif -%}
 {% if mail_user -%}
 #SBATCH --mail-type=FAIL
 #SBATCH --mail-user={{ mail_user }}

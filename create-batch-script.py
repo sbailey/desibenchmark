@@ -34,6 +34,9 @@ def parse_arguments():
     parser.add_argument("--account", "-A",
             default = "nstaff",
             help = "repository name")
+    parser.add_argument("--license", "-L",
+            default = None,
+            help = "file system license")
     parser.add_argument("--mail-user", "-m",
             help = "contact email in case job fails")
     parser.add_argument("--qos", "-q",
