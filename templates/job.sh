@@ -28,7 +28,8 @@ set -x
 datadir=/global/cscratch1/sd/sjbailey/desi/benchmark/inputs/
 let n={{ mpi_ranks_per_node }}*$SLURM_JOB_NUM_NODES
 
-mkdir -p $SCRATCH/temp
+outdir=$SCRATCH/temp-$SLURM_JOB_ID
+mkdir -p $outdir
 
 {% if not shifter_image -%}
 source env/bin/activate
@@ -37,4 +38,4 @@ source env/bin/activate
 export DESI_LOGLEVEL=error
 export OMP_NUM_THREADS={{ omp_num_threads }}
 
-srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores {{ "shifter" if shifter_image }} ./desi-extract -i $datadir -o $SCRATCH/temp
+srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores {{ "shifter" if shifter_image }} ./desi-extract -i $datadir -o $outdir
