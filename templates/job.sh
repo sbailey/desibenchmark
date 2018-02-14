@@ -38,4 +38,4 @@ source env/bin/activate
 export DESI_LOGLEVEL=error
 export OMP_NUM_THREADS={{ omp_num_threads }}
 
-srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores {{ "shifter" if shifter_image }} ./desi-extract -i $datadir -o $outdir
+srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores {{ "shifter" if shifter_image }} python /srv/desi-extract -i $datadir -o $outdir

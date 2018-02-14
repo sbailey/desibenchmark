@@ -105,3 +105,7 @@ RUN \
     echo "unset DESIMODEL" > $CONDA_PREFIX/etc/conda/deactivate.d/env_vars.sh
 
 WORKDIR /srv
+
+# Add the code
+
+ADD desi-extract /srv/desi-extract
