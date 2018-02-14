@@ -54,6 +54,12 @@ def parse_arguments():
     parser.add_argument("--shifter-image", "-s",
             default = None,
             help = "use this shifter image")
+    parser.add_argument("--datadir", "-d",
+            default = "/global/cscratch1/sd/sjbailey/desi/benchmark/inputs/",
+            help = "input data root directory")
+    parser.add_argument("--script-name", "-S",
+            default = None,
+            help = "script name (from job name if None)")
     args = parser.parse_args()
 
     if args.architecture == "haswell":
@@ -64,13 +70,14 @@ def parse_arguments():
         args.omp_num_threads = 4
     else:
         args.mpi_ranks_per_node = 24
-        args.omp_num_threads = 1
+        args.omp_num_threads = 2
 
     args.job_name = "-".join(["desi", 
         args.architecture, 
         "shifter" if args.shifter_image else "default",
         "{:04d}".format(args.nodes)])
-    args.script_name = "{}.sh".format(args.job_name)
+    if args.script_name is None:
+        args.script_name = "{}.sh".format(args.job_name)
 
     return args
  

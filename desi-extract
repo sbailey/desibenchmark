@@ -24,6 +24,8 @@ args = parser.parse_args()
 from mpi4py import MPI
 from desispec.scripts import extract
 import sys, os, glob, socket
+import random
+random.seed(1)
 
 comm = MPI.COMM_WORLD
 rank = comm.rank
@@ -42,6 +44,7 @@ nframe = size // bundles_per_frame
 if rank == 0:
     assert os.path.exists(args.outdir)
     pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix*.fits'))
+    random.shuffle(pixfiles)
     assert len(pixfiles) > 0
     assert nframe <= len(pixfiles)
     pixfiles = pixfiles[0:nframe]
