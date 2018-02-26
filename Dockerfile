@@ -88,7 +88,7 @@ RUN \
     pip install speclite==0.7                                                       &&  \
     pip install git+https://github.com/desihub/desiutil.git@1.9.9#egg=desiutil      &&  \
     pip install git+https://github.com/desihub/specter.git@0.8.2#egg=specter        &&  \
-    pip install git+https://github.com/desihub/desispec.git@0.17.1#egg=desispec     &&  \
+    pip install git+https://github.com/desihub/desispec.git@0.18.0#egg=desispec     &&  \
     pip install git+https://github.com/desihub/desimodel.git@0.9.1#egg=desimodel
 
 # Hack to get $DESIMODEL data somewhere; can we do better?

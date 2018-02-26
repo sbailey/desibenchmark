@@ -17,6 +17,7 @@ import argparse
 parser = argparse.ArgumentParser(usage = "{prog} [options]")
 parser.add_argument("-i", "--indir", type=str, required=True, help="input data directory")
 parser.add_argument("-o", "--outdir", type=str, required=True, help="output directory")
+parser.add_argument("-c", "--camera", type=str, choices=["b", "r", "z"], help="channel selection", default=None)
 # parser.add_argument("-n", "--nframes", type=int, help="number of input frames to extract")
 # parser.add_argument("-v", "--verbose", action="store_true", help="some flag")
 args = parser.parse_args()
@@ -43,7 +44,10 @@ nframe = size // bundles_per_frame
 
 if rank == 0:
     assert os.path.exists(args.outdir)
-    pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix*.fits'))
+    if args.camera is None:
+        pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix*.fits'))
+    else:
+        pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix-{}*.fits'.format(args.camera)))
     random.shuffle(pixfiles)
     assert len(pixfiles) > 0
     assert nframe <= len(pixfiles)
@@ -98,11 +102,13 @@ if comm_group.rank == 0:
     sys.stdout.flush()
 
 args = extract.parse(cmd.split()[1:])
-extract.main_mpi(args, comm=comm_group)
+timing = dict()
+extract.main_mpi(args, comm=comm_group, timing=timing)
 
 comm.barrier()
 end_time = time.time()
 
+timings = comm.gather(timing, root=0)
 hostnames = comm.gather(socket.gethostname(), root=0)
 if rank == 0:
     num_nodes = len(set(hostnames))
@@ -111,6 +117,7 @@ if rank == 0:
 
     print('{} frames in {:.1f} min'.format(nframe, (end_time - start_time)/60))
     print('Work rate = {:.2f} frames per node-hour'.format(work_rate))
-
+    import pprint
+    pprint.pprint(timings)
 
 
