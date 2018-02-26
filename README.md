@@ -21,8 +21,7 @@ bash miniconda3.sh -b -f -p env
 rm -rf miniconda3.sh
 source env/bin/activate
 conda update --yes conda
-conda install --yes python=3.5 numpy=1.13.1 scipy=0.19.1 \
-    astropy=1.3.3 pyyaml ipython matplotlib
+conda install --yes --file=packages.txt
 
 #- Add DESI-specific code
 pip install speclite==0.7
