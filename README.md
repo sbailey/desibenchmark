@@ -20,7 +20,6 @@ curl -o miniconda3.sh \
 bash miniconda3.sh -b -f -p env
 rm -rf miniconda3.sh
 source env/bin/activate
-conda update --yes conda
 conda install --yes --file=packages.txt
 
 #- Add DESI-specific code

@@ -46,7 +46,6 @@ RUN \
     curl --location --output miniconda3.sh  \
         https://repo.continuum.io/miniconda/Miniconda3-4.4.10-Linux-x86_64.sh   &&  \
     /bin/bash miniconda3.sh -b -f -p $CONDA_PREFIX              &&  \
-    $CONDA_PREFIX/bin/conda update --yes conda                  &&  \
     $CONDA_PREFIX/bin/conda install --yes --file=packages.txt   &&  \
     $CONDA_PREFIX/bin/conda clean --yes --all                   &&  \
     rm -rf packages.txt miniconda3.sh
