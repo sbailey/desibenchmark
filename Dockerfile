@@ -41,21 +41,15 @@ RUN \
 
 ENV CONDA_PREFIX /opt/anaconda3
 
+ADD packages.txt /tmp/.
 RUN \
     curl --location --output miniconda3.sh  \
-        https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh   &&  \
-    /bin/bash miniconda3.sh -b -f -p $CONDA_PREFIX  &&  \
-    $CONDA_PREFIX/bin/conda update --yes conda      &&  \
-    $CONDA_PREFIX/bin/conda install --yes               \
-        python=3.5          \
-        numpy=1.13.1        \
-        scipy=0.19.1        \
-        astropy=1.3.3       \
-        pyyaml              \
-        ipython             \
-        matplotlib      &&  \
-    $CONDA_PREFIX/bin/conda clean --yes --all   &&  \
-    rm -rf miniconda3.sh
+        https://repo.continuum.io/miniconda/Miniconda3-4.4.10-Linux-x86_64.sh   &&  \
+    /bin/bash miniconda3.sh -b -f -p $CONDA_PREFIX              &&  \
+    $CONDA_PREFIX/bin/conda update --yes conda                  &&  \
+    $CONDA_PREFIX/bin/conda install --yes --file=packages.txt   &&  \
+    $CONDA_PREFIX/bin/conda clean --yes --all                   &&  \
+    rm -rf packages.txt miniconda3.sh
 
 ENV PATH $CONDA_PREFIX/bin:$PATH
 
