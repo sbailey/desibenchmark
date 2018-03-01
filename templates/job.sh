@@ -25,7 +25,6 @@ module list
 set -x
 {% endif -%}
 
-datadir={{ datadir }}
 let n={{ mpi_ranks_per_node }}*$SLURM_JOB_NUM_NODES
 
 outdir=$SCRATCH/temp-$SLURM_JOB_ID
@@ -38,4 +37,16 @@ source env/bin/activate
 export DESI_LOGLEVEL=error
 export OMP_NUM_THREADS={{ omp_num_threads }}
 
-srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores {{ "shifter" if shifter_image }} python /srv/desi-extract -i $datadir -o $outdir
+srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores \
+{%- if shifter_image %}
+    shifter python /srv/desi-extract \
+{%- else %}
+    python ./desi-extract \
+{%- endif %}
+{%- if camera %}
+    -c {{ camera }} \
+{%- endif %}
+    {{ datadir }} \
+    $outdir  \
+    $(date +%s)
+

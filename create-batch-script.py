@@ -59,6 +59,10 @@ def parse_arguments():
     parser.add_argument("--datadir", "-d",
             default = "/project/projectdirs/m888/www/apex/desi/benchmark/",
             help = "input data root directory")
+    parser.add_argument("--camera", "-c",
+            choices = ["b", "r", "z"],
+            default = None,
+            help = "channel selection")
     parser.add_argument("--script-name", "-S",
             default = None,
             help = "script name (from job name if None)")
