@@ -43,10 +43,10 @@ srun -n $n -c {{ omp_num_threads }} --cpu_bind=cores \
 {%- else %}
     python ./desi-extract \
 {%- endif %}
-    -i {{ datadir }} \
-    -o $outdir  \
 {%- if camera %}
     -c {{ camera }} \
 {%- endif %}
+    {{ datadir }} \
+    $outdir  \
     $(date +%s)
 

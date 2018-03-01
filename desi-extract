@@ -22,10 +22,10 @@ random.seed(1)
 
 #- Parse args before initializing MPI so that --help will work anywhere
 
-parser = argparse.ArgumentParser(usage = "{prog} [options]")
-parser.add_argument("start_time", type=float, help="$(date +%s)")
-parser.add_argument("-i", "--indir", type=str, required=True, help="input data directory")
-parser.add_argument("-o", "--outdir", type=str, required=True, help="output directory")
+parser = argparse.ArgumentParser()
+parser.add_argument("indir", help="input data directory")
+parser.add_argument("outdir", help="output directory")
+parser.add_argument("start_time", help="use $(date +%%s)", type=float)
 parser.add_argument("-c", "--camera", type=str, choices=["b", "r", "z"], help="channel selection", default=None)
 # parser.add_argument("-n", "--nframes", type=int, help="number of input frames to extract")
 # parser.add_argument("-v", "--verbose", action="store_true", help="some flag")
