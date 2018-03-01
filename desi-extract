@@ -4,17 +4,26 @@
 DESI spectral extraction code benchmark
 
 salloc -N 5 -t 2:00:00 -C haswell -q interactive
-srun -n 160 -c 2 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+srun -n 160 -c 2 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp $(date +%s)
 """
 
-#- Get timer going ASAP
-import time
-start_time = time.time()
-str_start_time = time.asctime()
-
-#- Then parse args before initializing MPI so that --help will work anywhere
 import argparse
+import glob 
+import os
+import pprint
+import socket
+import random
+import sys
+import time
+
+from desispec.scripts import extract
+
+random.seed(1)
+
+#- Parse args before initializing MPI so that --help will work anywhere
+
 parser = argparse.ArgumentParser(usage = "{prog} [options]")
+parser.add_argument("start_time", type=float, help="$(date +%s)")
 parser.add_argument("-i", "--indir", type=str, required=True, help="input data directory")
 parser.add_argument("-o", "--outdir", type=str, required=True, help="output directory")
 parser.add_argument("-c", "--camera", type=str, choices=["b", "r", "z"], help="channel selection", default=None)
@@ -23,10 +32,6 @@ parser.add_argument("-c", "--camera", type=str, choices=["b", "r", "z"], help="c
 args = parser.parse_args()
 
 from mpi4py import MPI
-from desispec.scripts import extract
-import sys, os, glob, socket
-import random
-random.seed(1)
 
 comm = MPI.COMM_WORLD
 rank = comm.rank
@@ -34,9 +39,8 @@ size = comm.size
 
 comm.barrier()
 if rank == 0:
+    start_time = args.start_time
     startup_time = time.time() - start_time
-    print('Started at {}'.format(str_start_time))
-    print('python startup time: {:.1f} sec'.format(startup_time))
 
 bundles_per_frame = 20
 assert size % bundles_per_frame == 0, 'MPI size {} should be multiple of {}'.format(size, bundles_per_frame)
@@ -115,9 +119,9 @@ if rank == 0:
     node_hours = num_nodes * (end_time - start_time) / (60*60)
     work_rate = nframe / node_hours
 
-    print('{} frames in {:.1f} min'.format(nframe, (end_time - start_time)/60))
-    print('Work rate = {:.2f} frames per node-hour'.format(work_rate))
-    import pprint
     pprint.pprint(timings)
 
-
+    print('desi-extract {} effective frames in {:.1f} min'.format(nframe, (end_time - start_time)/60))
+    print('desi-extract effective work rate = {:.2f} frames per node-hour'.format(work_rate))
+    print('desi-extract startup time: {:.1f} sec'.format(startup_time))
+    print('desi-extract elapsed time: {:.1f} sec'.format(end_time - start_time))
