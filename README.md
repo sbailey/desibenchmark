@@ -45,6 +45,17 @@ mkdir -p $CONDA_PREFIX/etc/conda/activate.d
 mkdir -p $CONDA_PREFIX/etc/conda/deactivate.d
 echo "export DESIMODEL=$DESIMODEL" > $CONDA_PREFIX/etc/conda/activate.d/env_vars.sh
 echo "unset DESIMODEL" > $CONDA_PREFIX/etc/conda/deactivate.d/env_vars.sh
+
+git clone https://github.com/sbailey/desibenchmark
+cd desibenchmark
+```
+
+Or to use the latest pre-installed DESI code:
+```
+source /project/projectdirs/desi/software/desi_environment.sh master
+
+git clone https://github.com/sbailey/desibenchmark
+cd desibenchmark
 ```
 
 To do:
@@ -68,12 +79,25 @@ Should take 5-6 minutes and create $SCRATCH/frame-r1-00003580.fits.
 
 ## Running the benchmark
 
+Haswell on 19 nodes (32x2 cores) to process a single exposure of 30 frames:<BR/>
+```
+salloc -N 19 -t 1:00:00 -C haswell -q interactive
+srun -n 600 -c 2 --cpu_bind=cores \
+    ./desi-extract --night 20191001 --expid 3580 $SCRATCH/desi/benchmark/inputs/ $SCRATCH/temp $(date +%s)
+```
+Just r camera (10 frames; faster per-frame but packed less efficiently):
+```
+srun -N 7 -n 200 -c 2 --cpu_bind=cores \
+    ./desi-extract --night 20191001 --expid 3580 --camera r $SCRATCH/desi/benchmark/inputs/ $SCRATCH/temp $(date +%s)
+```
+
 Haswell on 5 nodes (32x2 cores) <BR/>
 ~12.5 frames per node-hour
 ```
 salloc -N 5 -t 2:00:00 -C haswell -q interactive
 let n=32*$SLURM_JOB_NUM_NODES
-srun -n $n -c 2 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+srun -n $n -c 2 --cpu_bind=cores \
+    ./desi-extract $SCRATCH/desi/benchmark/inputs/ $SCRATCH/temp $(date +%s)
 ```
 
 KNL on 5 nodes (68x4 cores) <BR/>
@@ -81,7 +105,8 @@ KNL on 5 nodes (68x4 cores) <BR/>
 ```
 salloc -N 5 -t 2:00:00 -C knl -q interactive
 let n=68*$SLURM_JOB_NUM_NODES
-srun -n $n -c 4 --cpu_bind=cores ./desi-extract -i $SCRATCH/desi/benchmark/inputs/ -o $SCRATCH/temp
+srun -n $n -c 4 --cpu_bind=cores \
+    ./desi-extract $SCRATCH/desi/benchmark/inputs/ $SCRATCH/temp $(date +%s)
 ```
 
 Optional, to reduce the logging verbosity for large scale runs, change

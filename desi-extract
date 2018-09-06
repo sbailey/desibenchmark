@@ -27,8 +27,10 @@ parser.add_argument("indir", help="input data directory")
 parser.add_argument("outdir", help="output directory")
 parser.add_argument("start_time", help="use $(date +%%s)", type=float)
 parser.add_argument("-c", "--camera", type=str, choices=["b", "r", "z"], help="channel selection", default=None)
+parser.add_argument("--night", type=str, help="YEARMMDD to extract", default='*')
+parser.add_argument("--expid", type=str, help="Exposure ID to extract", default='*')
 # parser.add_argument("-n", "--nframes", type=int, help="number of input frames to extract")
-# parser.add_argument("-v", "--verbose", action="store_true", help="some flag")
+parser.add_argument("-v", "--verbose", action="store_true", help="print per-rank detailed timing")
 args = parser.parse_args()
 
 from mpi4py import MPI
@@ -46,12 +48,18 @@ bundles_per_frame = 20
 assert size % bundles_per_frame == 0, 'MPI size {} should be multiple of {}'.format(size, bundles_per_frame)
 nframe = size // bundles_per_frame
 
+if args.camera is None:
+    args.camera = '?'
+
+if args.expid != '*':
+    args.expid = '{:08d}'.format(int(args.expid))
+
 if rank == 0:
     assert os.path.exists(args.outdir)
-    if args.camera is None:
-        pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix*.fits'))
-    else:
-        pixfiles = sorted(glob.glob(args.indir + '/pix/*/pix-{}*.fits'.format(args.camera)))
+    pixfiles = sorted(glob.glob(args.indir + \
+            '/pix/{}/pix-{}?-{}.fits'.format(
+            args.night, args.camera, args.expid)))
+
     random.shuffle(pixfiles)
     assert len(pixfiles) > 0
     assert nframe <= len(pixfiles)
@@ -101,6 +109,13 @@ cmd = cmd_template.format(indir=args.indir, night=night, outdir=args.outdir,
 # elif camera.startswith('z'):
 #     cmd = cmd + ' -w 9000,9200,1'
 
+if camera.startswith('b'):
+    cmd = cmd + ' -w 3570,5948,0.7'
+elif camera.startswith('r'):
+    cmd = cmd + ' -w 5626,7740,0.7'
+elif camera.startswith('z'):
+    cmd = cmd + ' -w 7436,9833,0.7'
+
 if comm_group.rank == 0:
     print(rank, cmd)
     sys.stdout.flush()
@@ -119,7 +134,8 @@ if rank == 0:
     node_hours = num_nodes * (end_time - start_time) / (60*60)
     work_rate = nframe / node_hours
 
-    pprint.pprint(timings)
+    if args.verbose:
+        pprint.pprint(timings)
 
     print('desi-extract {} effective frames in {:.1f} min'.format(nframe, (end_time - start_time)/60))
     print('desi-extract effective work rate = {:.2f} frames per node-hour'.format(work_rate))
