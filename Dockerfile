@@ -1,5 +1,4 @@
-FROM ubuntu:16.04
-MAINTAINER Rollin Thomas <rcthomas@lbl.gov>
+FROM ubuntu:20.04
 WORKDIR /tmp
 
 # Ubuntu packages
@@ -18,23 +17,8 @@ RUN \
         curl                    \
         gfortran                \
         git                     \
-        subversion
-
-# MPICH
-
-RUN \
-    curl --location --remote-name   \
-        http://www.mpich.org/static/downloads/3.2/mpich-3.2.tar.gz  &&  \
-    tar zxvf mpich-3.2.tar.gz   &&  \
-    (cd mpich-3.2               &&  \
-        ./configure             &&  \
-        make -j 4               &&  \
-        make install            &&  \
-        make clean)             &&  \
-    /sbin/ldconfig              &&  \
-    rm -rf                          \
-        mpich-3.2.tar.gz            \
-        mpich-3.2
+        subversion              \
+        wget
 
 # Miniconda Python 3
 # NOTE: How to source/conda activate in Dockerfile?
@@ -50,7 +34,26 @@ RUN \
     $CONDA_PREFIX/bin/conda clean --yes --all                   &&  \
     rm -rf packages.txt miniconda3.sh
 
+RUN rm -rf $CONDA_PREFIX/compiler_compat/ld
+
 ENV PATH $CONDA_PREFIX/bin:$PATH
+
+# MPICH
+ARG mpich=4.0.2
+ARG mpich_prefix=mpich-$mpich
+
+RUN \
+    wget https://www.mpich.org/static/downloads/$mpich/$mpich_prefix.tar.gz && \
+    tar xvzf $mpich_prefix.tar.gz                                           && \
+    cd $mpich_prefix                                                        && \
+    ./configure                                                             && \
+    make -j 32                                                              && \
+    make install                                                            && \
+    make clean                                                              && \
+    cd ..                                                                   && \
+    rm -rf $mpich_prefix
+
+RUN /sbin/ldconfig
 
 # Define astropy cache and config in container
 
@@ -64,16 +67,7 @@ RUN python -c "import astropy"
 
 # mpi4py
 
-RUN \
-    curl --location --remote-name   \
-        https://bitbucket.org/mpi4py/mpi4py/downloads/mpi4py-2.0.0.tar.gz   &&  \
-    tar zxvf mpi4py-2.0.0.tar.gz    &&  \
-    (cd mpi4py-2.0.0                &&  \
-        python setup.py build       &&  \
-        python setup.py install)    &&  \
-    rm -rf                              \
-        mpi4py-2.0.0.tar.gz             \
-        mpi4py-2.0.0
+RUN python3 -m pip install mpi4py
 
 # DESI packages
 
@@ -102,3 +96,6 @@ WORKDIR /srv
 # Add the code
 
 ADD desi-extract /srv/desi-extract
+
+RUN chmod 755 -R /srv
+
