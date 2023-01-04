@@ -115,3 +115,8 @@ the logging level before running `desi-extract`:
 export DESI_LOGLEVEL=error
 ```
 
+## Duplicating the dataset
+
+For large runs, it is necessary to duplicate the provided 2019 dataset. You can use the
+script `duplicate-pix-data.py` provided in this repo. Note that you'll need to change
+the path to your copy of the `benchmark-z/pix` directory. 
