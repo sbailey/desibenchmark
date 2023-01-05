@@ -118,5 +118,29 @@ export DESI_LOGLEVEL=error
 ## Duplicating the dataset
 
 For large runs, it is necessary to duplicate the provided 2019 dataset. You can use the
-script `duplicate-pix-data.py` provided in this repo. Note that you'll need to change
-the path to your copy of the `benchmark-z/pix` directory. 
+script `duplicate-pix-data.py` provided in this repo. 
+
+### Examples
+
+Creating dataset with default script values (years 2020-2023 and days 01-09).
+The user however must always specify their workingdir.
+
+```
+python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest"
+```
+
+Creating only one year
+
+```
+python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years=2020
+```
+
+Creating specific years and dates
+using the syntax required by
+ [Click multiple](https://click-docs-cn.readthedocs.io/zh_CN/latest/options.html#multiple-options)
+
+```
+python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years=2020 --create-years=2021 --create-days=01 --create-days=02
+``` 
+
+
