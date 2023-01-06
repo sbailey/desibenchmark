@@ -132,15 +132,13 @@ python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark
 Creating only one year
 
 ```
-python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years=2020
+python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years 2020
 ```
 
 Creating specific years and dates
-using the syntax required by
- [Click multiple](https://click-docs-cn.readthedocs.io/zh_CN/latest/options.html#multiple-options)
 
 ```
-python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years=2020 --create-years=2021 --create-days=01 --create-days=02
-``` 
+python duplicate-pix-data.py --workingdir="/pscratch/sd/s/stephey/desi/benchmark-z-backup/pixtest" --create-years 2020 2021 --create-days 1 2
+```
 
 
